@@ -3,7 +3,7 @@ import { PrismaClient } from '@/generated/prisma';
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
-  const checks = {
+  const checks: any = {
     database: { status: 'unknown', responseTime: 0, error: null },
     filesystem: { status: 'unknown', error: null },
     environment: { status: 'unknown', missing: [] },
@@ -22,10 +22,10 @@ export async function GET(request: NextRequest) {
       error: null
     };
   } catch (error) {
-    (checks.database as any) = {
+    checks.database = {
       status: 'unhealthy',
       responseTime: Date.now() - startTime,
-      error: error instanceof Error ? error.message : String(error)
+      error: (error as Error).message
     };
   }
 
@@ -46,7 +46,7 @@ export async function GET(request: NextRequest) {
     
     checks.filesystem = { status: 'healthy', error: null };
   } catch (error) {
-    checks.filesystem = { status: 'unhealthy', error: error instanceof Error ? error.message : String(error) };
+    checks.filesystem = { status: 'unhealthy', error: error.message };
   }
 
   // Check environment variables
@@ -77,13 +77,13 @@ export async function GET(request: NextRequest) {
           error: response.ok ? null : `HTTP ${response.status}`
         };
       } else {
-        (checks.n8n as any) = { status: 'unhealthy', error: 'N8N_WEBHOOK_URL not configured' };
+        checks.n8n = { status: 'unhealthy', error: 'N8N_WEBHOOK_URL not configured' };
       }
     } catch (error) {
-      (checks.n8n as any) = { status: 'unhealthy', error: error instanceof Error ? error.message : String(error) };
+      checks.n8n = { status: 'unhealthy', error: error.message };
     }
   } else {
-    (checks.n8n as any) = { status: 'skipped', error: 'Use ?check-n8n=true to test' };
+    checks.n8n = { status: 'skipped', error: 'Use ?check-n8n=true to test' };
   }
 
   // Overall health status
