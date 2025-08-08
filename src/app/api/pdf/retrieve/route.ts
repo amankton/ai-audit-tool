@@ -165,9 +165,9 @@ export async function GET(request: NextRequest) {
       message: 'PDF found',
       pdf: {
         reportId: report.id,
-        submissionId: (report.submission.formData as any)?.submissionId,
+        submissionId: report.submission.formData?.submissionId,
         email: report.submission.email,
-        companyName: (report.submission.formData as any)?.companyName || 'Unknown',
+        companyName: report.submission.formData?.companyName || 'Unknown',
         pdfUrl: report.pdfUrl,
         pdfFilename: report.pdfFilename,
         pdfFileSize: report.pdfFileSize,
@@ -186,7 +186,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error retrieving PDF:', error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: error.message },
+      { success: false, error: 'Internal server error', details: (error as Error).message },
       { status: 500 }
     );
   } finally {

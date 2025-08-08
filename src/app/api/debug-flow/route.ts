@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Debug flow GET error:', error);
     return NextResponse.json(
-      { success: false, error: 'Debug flow failed', details: error.message },
+      { success: false, error: 'Debug flow failed', details: (error as Error).message },
       { status: 500 }
     );
   }
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Debug flow error:', error);
     return NextResponse.json(
-      { success: false, error: 'Debug flow failed', details: error.message },
+      { success: false, error: 'Debug flow failed', details: (error as Error).message },
       { status: 500 }
     );
   }

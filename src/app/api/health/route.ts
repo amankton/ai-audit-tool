@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     checks.database = {
       status: 'unhealthy',
       responseTime: Date.now() - startTime,
-      error: error.message
+      error: (error as Error).message
     };
   }
 

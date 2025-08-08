@@ -57,7 +57,7 @@ export async function GET(
   } catch (error) {
     console.error('Error serving PDF:', error);
     return NextResponse.json(
-      { success: false, error: 'Error serving PDF file', details: error.message },
+      { success: false, error: 'Error serving PDF file', details: (error as Error).message },
       { status: 500 }
     );
   }

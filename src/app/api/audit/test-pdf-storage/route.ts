@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const summary = submissions.map(submission => ({
       id: submission.id,
       email: submission.email,
-      companyName: (submission.formData as any)?.companyName || 'Unknown',
+      companyName: submission.formData?.companyName || 'Unknown',
       status: submission.submissionStatus,
       createdAt: submission.createdAt,
       completedAt: submission.completedAt,
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error in PDF storage test:', error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: error.message },
+      { success: false, error: 'Internal server error', details: (error as Error).message },
       { status: 500 }
     );
   }
@@ -84,20 +84,20 @@ export async function POST(request: NextRequest) {
       message: 'Test submission created for PDF storage testing',
       submission: {
         id: testSubmission.id,
-        submissionId: (testSubmission.formData as any)?.submissionId,
+        submissionId: testSubmission.formData?.submissionId,
         email: testSubmission.email,
-        companyName: (testSubmission.formData as any)?.companyName,
+        companyName: testSubmission.formData?.companyName,
         webhookTestUrl: `${request.nextUrl.origin}/api/audit/webhook-response`,
         testPayload: {
-          submissionId: (testSubmission.formData as any)?.submissionId,
+          submissionId: testSubmission.formData?.submissionId,
           email: testSubmission.email,
           timestamp: new Date().toISOString(),
           business_overview: {
-            company_name: (testSubmission.formData as any)?.companyName,
+            company_name: testSubmission.formData?.companyName,
             industry: 'Technology'
           },
           data: {
-            fileName: `${(testSubmission.formData as any)?.companyName}_AI_Audit_Report.pdf`,
+            fileName: `${testSubmission.formData?.companyName}_AI_Audit_Report.pdf`,
             fileExtension: 'pdf',
             mimeType: 'application/pdf',
             fileSize: 813000, // Example size

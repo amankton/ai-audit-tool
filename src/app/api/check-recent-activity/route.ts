@@ -49,8 +49,8 @@ export async function GET(request: NextRequest) {
         recentSubmissions: recentSubmissions.map(sub => ({
           id: sub.id,
           email: sub.email,
-          companyName: (sub.formData as any)?.companyName || 'Unknown',
-          submissionId: (sub.formData as any)?.submissionId,
+          companyName: sub.formData?.companyName || 'Unknown',
+          submissionId: sub.formData?.submissionId,
           status: sub.submissionStatus,
           createdAt: sub.createdAt,
           completedAt: sub.completedAt,
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error checking recent activity:', error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: error.message },
+      { success: false, error: 'Internal server error', details: (error as Error).message },
       { status: 500 }
     );
   } finally {

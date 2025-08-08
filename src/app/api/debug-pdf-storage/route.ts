@@ -28,9 +28,9 @@ export async function GET(request: NextRequest) {
     for (const report of reports) {
       const reportInfo = {
         reportId: report.id,
-        submissionId: (report.submission.formData as any)?.submissionId,
+        submissionId: report.submission.formData?.submissionId,
         email: report.submission.email,
-        companyName: (report.submission.formData as any)?.companyName,
+        companyName: report.submission.formData?.companyName,
         
         // PDF Database Info
         pdfUrl: report.pdfUrl,
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error debugging PDF storage:', error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: error.message },
+      { success: false, error: 'Internal server error', details: (error as Error).message },
       { status: 500 }
     );
   } finally {
