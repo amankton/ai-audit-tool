@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     const formattedReports = reports!.map(report => ({
       id: report.id,
       submissionId: report.submission.id,
-      companyName: report.submission.formData?.companyName || 'Unknown Company',
+      companyName: (report.submission.formData as any)?.companyName || 'Unknown Company',
       email: report.submission.email,
       reportType: report.reportType,
       submissionStatus: report.submission.submissionStatus,
@@ -146,7 +146,7 @@ export async function POST(request: NextRequest) {
       report: {
         id: updatedReport.id,
         submissionId: updatedReport.submission.id,
-        companyName: updatedReport.submission.formData?.companyName || 'Unknown Company',
+        companyName: (updatedReport.submission.formData as any)?.companyName || 'Unknown Company',
         email: updatedReport.submission.email,
         action: action,
         updatedAt: new Date(),
