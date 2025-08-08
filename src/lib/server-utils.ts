@@ -48,6 +48,7 @@ export interface AuditReportWithPdf {
   id: string;
   submissionId: string;
   reportType: string;
+  reportData: any; // JSON data containing the audit report content
   pdfUrl: string | null;
   pdfFileSize: number | null;
   pdfFilename: string | null;
@@ -77,7 +78,18 @@ export async function getAuditReportBySubmissionId(submissionId: string): Promis
           }
         }
       },
-      include: {
+      select: {
+        id: true,
+        submissionId: true,
+        reportType: true,
+        reportData: true, // Include reportData field
+        pdfUrl: true,
+        pdfFileSize: true,
+        pdfFilename: true,
+        pdfStoredAt: true,
+        generatedAt: true,
+        sentAt: true,
+        openedAt: true,
         submission: {
           select: {
             id: true,
@@ -109,7 +121,18 @@ export async function getAuditReportByEmail(email: string): Promise<AuditReportW
           email: email
         }
       },
-      include: {
+      select: {
+        id: true,
+        submissionId: true,
+        reportType: true,
+        reportData: true, // Include reportData field
+        pdfUrl: true,
+        pdfFileSize: true,
+        pdfFilename: true,
+        pdfStoredAt: true,
+        generatedAt: true,
+        sentAt: true,
+        openedAt: true,
         submission: {
           select: {
             id: true,
