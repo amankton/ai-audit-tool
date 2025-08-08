@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@/generated/prisma';
 
+interface HealthCheck {
+  database: { status: string; responseTime: number; error: string | null };
+  filesystem: { status: string; error: string | null };
+  environment: { status: string; missing: string[] };
+  n8n: { status: string; error: string | null };
+}
+
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
-  const checks = {
+  const checks: HealthCheck = {
     database: { status: 'unknown', responseTime: 0, error: null },
     filesystem: { status: 'unknown', error: null },
     environment: { status: 'unknown', missing: [] },
@@ -79,9 +86,8 @@ export async function GET(request: NextRequest) {
       } else {
         checks.n8n = { status: 'unhealthy', error: 'N8N_WEBHOOK_URL not configured' };
       }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      checks.n8n = { status: 'unhealthy', error: msg };
+    } catch (error) {
+      checks.n8n = { status: 'unhealthy', error: error.message };
     }
   } else {
     checks.n8n = { status: 'skipped', error: 'Use ?check-n8n=true to test' };
