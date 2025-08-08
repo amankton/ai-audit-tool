@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@/generated/prisma';
 import { z } from 'zod';
-import { savePdfData, validatePdfData } from '@/lib/utils';
+import fs from 'fs';
+import path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -24,9 +25,9 @@ export async function POST(request: NextRequest) {
     // Validate the request data
     const validatedData = pdfStorageSchema.parse(body);
     
-    // Validate PDF data format
-    if (!validatePdfData(validatedData.pdfData)) {
-      console.error('Invalid PDF data received');
+    // Validate PDF data format (inline validation)
+    if (!validatedData.pdfData || !validatedData.pdfData.startsWith('data:application/pdf;base64,')) {
+      console.error('Invalid PDF data received - must be base64 encoded PDF');
       return NextResponse.json(
         { success: false, error: 'Invalid PDF data format' },
         { status: 400 }
@@ -77,10 +78,29 @@ export async function POST(request: NextRequest) {
 
     console.log('Found submission:', submission.id);
 
-    // Save PDF data to file system
+    // Save PDF data to file system (inline implementation)
     let pdfUrl: string;
     try {
-      pdfUrl = await savePdfData(validatedData.pdfData, validatedData.filename);
+      // Extract base64 data from data URL
+      const base64Data = validatedData.pdfData.replace(/^data:application\/pdf;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+
+      // Create uploads directory if it doesn't exist
+      const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'reports');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+
+      // Generate unique filename
+      const timestamp = Date.now();
+      const sanitizedFilename = validatedData.filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const filename = `${timestamp}-${sanitizedFilename}`;
+      const filePath = path.join(uploadsDir, filename);
+
+      // Write PDF file
+      fs.writeFileSync(filePath, buffer);
+      pdfUrl = `/uploads/reports/${filename}`;
+
       console.log('PDF saved successfully:', pdfUrl);
     } catch (pdfError) {
       console.error('Error saving PDF data:', pdfError);

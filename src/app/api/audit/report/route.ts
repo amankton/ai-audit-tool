@@ -40,7 +40,7 @@ const n8nResponseSchema = z.object({
       threeYearROI: z.number(),
       costSavings: z.object({
         annual: z.number(),
-        breakdown: z.record(z.number()),
+        breakdown: z.record(z.string(), z.number()),
       }),
     }),
     riskAssessment: z.object({
