@@ -21,11 +21,12 @@ export async function GET(request: NextRequest) {
       responseTime: Date.now() - dbStart,
       error: null
     };
-  } catch (error) {
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
     checks.database = {
       status: 'unhealthy',
       responseTime: Date.now() - startTime,
-      error: (error as Error).message
+      error: msg
     };
   }
 
@@ -45,9 +46,8 @@ export async function GET(request: NextRequest) {
     fs.unlinkSync(testFile);
     
     checks.filesystem = { status: 'healthy', error: null };
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    checks.filesystem = { status: 'unhealthy', error: msg };
+  } catch (error) {
+    checks.filesystem = { status: 'unhealthy', error: error.message };
   }
 
   // Check environment variables
@@ -80,9 +80,8 @@ export async function GET(request: NextRequest) {
       } else {
         checks.n8n = { status: 'unhealthy', error: 'N8N_WEBHOOK_URL not configured' };
       }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      checks.n8n = { status: 'unhealthy', error: msg };
+    } catch (error) {
+      checks.n8n = { status: 'unhealthy', error: error.message };
     }
   } else {
     checks.n8n = { status: 'skipped', error: 'Use ?check-n8n=true to test' };
