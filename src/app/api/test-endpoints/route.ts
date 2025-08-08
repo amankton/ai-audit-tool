@@ -33,9 +33,10 @@ export async function POST(request: NextRequest) {
       receivedData: body,
       timestamp: new Date().toISOString()
     });
-  } catch (error) {
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: error.message },
+      { success: false, error: 'Internal server error', details: msg },
       { status: 500 }
     );
   }

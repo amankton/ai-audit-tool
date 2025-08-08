@@ -156,7 +156,7 @@ export const AuditForm: React.FC = () => {
         }
       } catch (fetchError) {
         clearTimeout(timeoutId);
-        if (fetchError.name === 'AbortError') {
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
           // Timeout occurred - report is being processed in background
           setIsSubmitted(true);
           toast.success('🎉 Your AI audit is being processed! This may take a few minutes. We\'ll email your detailed report once it\'s ready.');

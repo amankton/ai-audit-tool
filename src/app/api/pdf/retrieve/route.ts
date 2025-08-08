@@ -58,7 +58,7 @@ export async function GET(request: NextRequest) {
           pdfFileSize: report.pdfFileSize,
           pdfStoredAt: report.pdfStoredAt,
           downloadUrl: `${request.nextUrl.origin}/api/pdf/retrieve?reportId=${report.id}&download=true`,
-          viewUrl: `${request.nextUrl.origin}/api/pdf/serve/${path.basename(report.pdfUrl)}`,
+          viewUrl: `${request.nextUrl.origin}/api/pdf/serve/${path.basename(report.pdfUrl || '')}`,
           directUrl: `${request.nextUrl.origin}${report.pdfUrl}`,
           generatedAt: report.generatedAt,
           submissionCreatedAt: report.submission.createdAt
@@ -192,10 +192,11 @@ export async function GET(request: NextRequest) {
       }
     });
 
-  } catch (error) {
-    console.error('Error retrieving PDF:', error);
+  } catch (err) {
+    console.error('Error retrieving PDF:', err);
+    const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: error.message },
+      { success: false, error: 'Internal server error', details: msg },
       { status: 500 }
     );
   } finally {
