@@ -3,7 +3,7 @@ import { PrismaClient } from '@/generated/prisma';
 
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
-  const checks: any = {
+  const checks = {
     database: { status: 'unknown', responseTime: 0, error: null },
     filesystem: { status: 'unknown', error: null },
     environment: { status: 'unknown', missing: [] },
@@ -45,8 +45,9 @@ export async function GET(request: NextRequest) {
     fs.unlinkSync(testFile);
     
     checks.filesystem = { status: 'healthy', error: null };
-  } catch (error) {
-    checks.filesystem = { status: 'unhealthy', error: error.message };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    checks.filesystem = { status: 'unhealthy', error: msg };
   }
 
   // Check environment variables
@@ -79,8 +80,9 @@ export async function GET(request: NextRequest) {
       } else {
         checks.n8n = { status: 'unhealthy', error: 'N8N_WEBHOOK_URL not configured' };
       }
-    } catch (error) {
-      checks.n8n = { status: 'unhealthy', error: error.message };
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      checks.n8n = { status: 'unhealthy', error: msg };
     }
   } else {
     checks.n8n = { status: 'skipped', error: 'Use ?check-n8n=true to test' };
