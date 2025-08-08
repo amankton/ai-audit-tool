@@ -4,10 +4,10 @@ import { PrismaClient } from '@/generated/prisma';
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
   const checks = {
-    database: { status: 'unknown', responseTime: 0, error: null },
-    filesystem: { status: 'unknown', error: null },
-    environment: { status: 'unknown', missing: [] },
-    n8n: { status: 'unknown', error: null }
+    database: { status: 'unknown' as string, responseTime: 0, error: null as string | null },
+    filesystem: { status: 'unknown' as string, error: null as string | null },
+    environment: { status: 'unknown' as string, missing: [] as string[] },
+    n8n: { status: 'unknown' as string, error: null as string | null }
   };
 
   // Check database connectivity
