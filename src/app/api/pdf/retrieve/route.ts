@@ -165,9 +165,9 @@ export async function GET(request: NextRequest) {
       message: 'PDF found',
       pdf: {
         reportId: report.id,
-        submissionId: report.submission.formData?.submissionId,
+        submissionId: (report.submission.formData as any)?.submissionId,
         email: report.submission.email,
-        companyName: report.submission.formData?.companyName || 'Unknown',
+        companyName: (report.submission.formData as any)?.companyName || 'Unknown',
         pdfUrl: report.pdfUrl,
         pdfFilename: report.pdfFilename,
         pdfFileSize: report.pdfFileSize,

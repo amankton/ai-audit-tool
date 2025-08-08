@@ -52,9 +52,9 @@ export async function POST(request: NextRequest) {
       message: 'Test submission created successfully',
       submission: {
         id: submission.id,
-        submissionId: submission.formData?.submissionId,
+        submissionId: (submission.formData as any)?.submissionId,
         email: submission.email,
-        companyName: submission.formData?.companyName,
+        companyName: (submission.formData as any)?.companyName,
         status: submission.submissionStatus
       }
     });
@@ -86,9 +86,9 @@ export async function GET(request: NextRequest) {
       message: 'Recent submissions retrieved',
       submissions: submissions.map(sub => ({
         id: sub.id,
-        submissionId: sub.formData?.submissionId,
+        submissionId: (sub.formData as any)?.submissionId,
         email: sub.email,
-        companyName: sub.formData?.companyName,
+        companyName: (sub.formData as any)?.companyName,
         status: sub.submissionStatus,
         createdAt: sub.createdAt,
         hasReports: sub.auditReports.length > 0,

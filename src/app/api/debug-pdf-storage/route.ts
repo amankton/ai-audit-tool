@@ -28,9 +28,9 @@ export async function GET(request: NextRequest) {
     for (const report of reports) {
       const reportInfo = {
         reportId: report.id,
-        submissionId: report.submission.formData?.submissionId,
+        submissionId: (report.submission.formData as any)?.submissionId,
         email: report.submission.email,
-        companyName: report.submission.formData?.companyName,
+        companyName: (report.submission.formData as any)?.companyName,
         
         // PDF Database Info
         pdfUrl: report.pdfUrl,

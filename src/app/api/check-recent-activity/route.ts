@@ -49,8 +49,8 @@ export async function GET(request: NextRequest) {
         recentSubmissions: recentSubmissions.map(sub => ({
           id: sub.id,
           email: sub.email,
-          companyName: sub.formData?.companyName || 'Unknown',
-          submissionId: sub.formData?.submissionId,
+          companyName: (sub.formData as any)?.companyName || 'Unknown',
+          submissionId: (sub.formData as any)?.submissionId,
           status: sub.submissionStatus,
           createdAt: sub.createdAt,
           completedAt: sub.completedAt,

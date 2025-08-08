@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const summary = submissions.map(submission => ({
       id: submission.id,
       email: submission.email,
-      companyName: submission.formData?.companyName || 'Unknown',
+      companyName: (submission.formData as any)?.companyName || 'Unknown',
       status: submission.submissionStatus,
       createdAt: submission.createdAt,
       completedAt: submission.completedAt,
@@ -84,20 +84,20 @@ export async function POST(request: NextRequest) {
       message: 'Test submission created for PDF storage testing',
       submission: {
         id: testSubmission.id,
-        submissionId: testSubmission.formData?.submissionId,
+        submissionId: (testSubmission.formData as any)?.submissionId,
         email: testSubmission.email,
-        companyName: testSubmission.formData?.companyName,
+        companyName: (testSubmission.formData as any)?.companyName,
         webhookTestUrl: `${request.nextUrl.origin}/api/audit/webhook-response`,
         testPayload: {
-          submissionId: testSubmission.formData?.submissionId,
+          submissionId: (testSubmission.formData as any)?.submissionId,
           email: testSubmission.email,
           timestamp: new Date().toISOString(),
           business_overview: {
-            company_name: testSubmission.formData?.companyName,
+            company_name: (testSubmission.formData as any)?.companyName,
             industry: 'Technology'
           },
           data: {
-            fileName: `${testSubmission.formData?.companyName}_AI_Audit_Report.pdf`,
+            fileName: `${(testSubmission.formData as any)?.companyName}_AI_Audit_Report.pdf`,
             fileExtension: 'pdf',
             mimeType: 'application/pdf',
             fileSize: 813000, // Example size
