@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@/generated/prisma';
 
+// Helper function to safely extract string values from Prisma JsonValue
+function getStr(fd: unknown, key: string): string | undefined {
+  if (fd && typeof fd === 'object' && !Array.isArray(fd)) {
+    const v = (fd as Record<string, unknown>)[key];
+    if (typeof v === 'string' && v.trim()) return v;
+  }
+  return undefined;
+}
+
 const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
@@ -49,8 +58,8 @@ export async function GET(request: NextRequest) {
         recentSubmissions: recentSubmissions.map(sub => ({
           id: sub.id,
           email: sub.email,
-          companyName: (sub.formData as any)?.companyName || 'Unknown',
-          submissionId: (sub.formData as any)?.submissionId,
+          companyName: getStr(sub.formData, 'companyName') ?? 'Unknown',
+          submissionId: getStr(sub.formData, 'submissionId') ?? 'Unknown',
           status: sub.submissionStatus,
           createdAt: sub.createdAt,
           completedAt: sub.completedAt,
@@ -69,8 +78,8 @@ export async function GET(request: NextRequest) {
         recentReports: recentReports.map(report => ({
           id: report.id,
           submissionEmail: report.submission.email,
-          companyName: (report.submission.formData as any)?.companyName || 'Unknown',
-          submissionId: (report.submission.formData as any)?.submissionId,
+          companyName: getStr(report.submission.formData, 'companyName') ?? 'Unknown',
+          submissionId: getStr(report.submission.formData, 'submissionId') ?? 'Unknown',
           hasPdf: !!report.pdfUrl,
           pdfUrl: report.pdfUrl,
           pdfFilename: report.pdfFilename,

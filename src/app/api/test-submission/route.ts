@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@/generated/prisma';
 
+// Helper function to safely extract string values from Prisma JsonValue
+function getStr(fd: unknown, key: string): string | undefined {
+  if (fd && typeof fd === 'object' && !Array.isArray(fd)) {
+    const v = (fd as Record<string, unknown>)[key];
+    if (typeof v === 'string' && v.trim()) return v;
+  }
+  return undefined;
+}
+
 const prisma = new PrismaClient();
 
 export async function POST(request: NextRequest) {
@@ -52,17 +61,18 @@ export async function POST(request: NextRequest) {
       message: 'Test submission created successfully',
       submission: {
         id: submission.id,
-        submissionId: submission.formData?.submissionId,
+        submissionId: getStr(submission.formData, 'submissionId') ?? 'Unknown',
         email: submission.email,
-        companyName: submission.formData?.companyName,
+        companyName: getStr(submission.formData, 'companyName') ?? 'Unknown',
         status: submission.submissionStatus
       }
     });
 
-  } catch (error) {
-    console.error('Error creating test submission:', error);
+  } catch (err) {
+    console.error('Error creating test submission:', err);
+    const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { success: false, error: 'Failed to create test submission', details: (error as Error).message },
+      { success: false, error: 'Failed to create test submission', details: msg },
       { status: 500 }
     );
   } finally {
@@ -86,9 +96,9 @@ export async function GET(request: NextRequest) {
       message: 'Recent submissions retrieved',
       submissions: submissions.map(sub => ({
         id: sub.id,
-        submissionId: sub.formData?.submissionId,
+        submissionId: getStr(sub.formData, 'submissionId') ?? 'Unknown',
         email: sub.email,
-        companyName: sub.formData?.companyName,
+        companyName: getStr(sub.formData, 'companyName') ?? 'Unknown',
         status: sub.submissionStatus,
         createdAt: sub.createdAt,
         hasReports: sub.auditReports.length > 0,
@@ -96,10 +106,11 @@ export async function GET(request: NextRequest) {
       }))
     });
 
-  } catch (error) {
-    console.error('Error retrieving submissions:', error);
+  } catch (err) {
+    console.error('Error retrieving submissions:', err);
+    const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { success: false, error: 'Failed to retrieve submissions', details: (error as Error).message },
+      { success: false, error: 'Failed to retrieve submissions', details: msg },
       { status: 500 }
     );
   } finally {

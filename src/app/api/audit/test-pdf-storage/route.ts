@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@/generated/prisma';
 
+// Helper function to safely extract string values from Prisma JsonValue
+function getStr(fd: unknown, key: string): string | undefined {
+  if (fd && typeof fd === 'object' && !Array.isArray(fd)) {
+    const v = (fd as Record<string, unknown>)[key];
+    if (typeof v === 'string' && v.trim()) return v;
+  }
+  return undefined;
+}
+
 const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
@@ -19,7 +28,7 @@ export async function GET(request: NextRequest) {
     const summary = submissions.map(submission => ({
       id: submission.id,
       email: submission.email,
-      companyName: (submission.formData as any)?.companyName || 'Unknown',
+      companyName: getStr(submission.formData, 'companyName') ?? 'Unknown',
       status: submission.submissionStatus,
       createdAt: submission.createdAt,
       completedAt: submission.completedAt,
@@ -45,10 +54,11 @@ export async function GET(request: NextRequest) {
       ).length
     });
 
-  } catch (error) {
-    console.error('Error in PDF storage test:', error);
+  } catch (err) {
+    console.error('Error in PDF storage test:', err);
+    const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: (error as Error).message },
+      { success: false, error: 'Internal server error', details: msg },
       { status: 500 }
     );
   }
@@ -84,20 +94,20 @@ export async function POST(request: NextRequest) {
       message: 'Test submission created for PDF storage testing',
       submission: {
         id: testSubmission.id,
-        submissionId: (testSubmission.formData as any)?.submissionId,
+        submissionId: getStr(testSubmission.formData, 'submissionId') ?? 'Unknown',
         email: testSubmission.email,
-        companyName: (testSubmission.formData as any)?.companyName,
+        companyName: getStr(testSubmission.formData, 'companyName') ?? 'Unknown',
         webhookTestUrl: `${request.nextUrl.origin}/api/audit/webhook-response`,
         testPayload: {
-          submissionId: (testSubmission.formData as any)?.submissionId,
+          submissionId: getStr(testSubmission.formData, 'submissionId') ?? 'Unknown',
           email: testSubmission.email,
           timestamp: new Date().toISOString(),
           business_overview: {
-            company_name: (testSubmission.formData as any)?.companyName,
+            company_name: getStr(testSubmission.formData, 'companyName') ?? 'Unknown',
             industry: 'Technology'
           },
           data: {
-            fileName: `${(testSubmission.formData as any)?.companyName}_AI_Audit_Report.pdf`,
+            fileName: `${getStr(testSubmission.formData, 'companyName') ?? 'Unknown'}_AI_Audit_Report.pdf`,
             fileExtension: 'pdf',
             mimeType: 'application/pdf',
             fileSize: 813000, // Example size
@@ -107,10 +117,11 @@ export async function POST(request: NextRequest) {
       }
     });
 
-  } catch (error) {
-    console.error('Error creating test submission:', error);
+  } catch (err) {
+    console.error('Error creating test submission:', err);
+    const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: (error as Error).message },
+      { success: false, error: 'Internal server error', details: msg },
       { status: 500 }
     );
   }
