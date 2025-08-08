@@ -21,12 +21,11 @@ export async function GET(request: NextRequest) {
       responseTime: Date.now() - dbStart,
       error: null
     };
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
+  } catch (error) {
     checks.database = {
       status: 'unhealthy',
       responseTime: Date.now() - startTime,
-      error: msg
+      error: error instanceof Error ? error.message : String(error)
     };
   }
 
