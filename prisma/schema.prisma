@@ -1,0 +1,89 @@
+// AI Audit System Database Schema
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+model Company {
+  id                   String   @id @default(cuid())
+  name                 String
+  industry             String?
+  employeeCountRange   String?  @map("employee_count_range")
+  annualRevenueRange   String?  @map("annual_revenue_range")
+  website              String?
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  auditSubmissions     AuditSubmission[]
+
+  @@map("companies")
+}
+
+model AuditSubmission {
+  id                   String   @id @default(cuid())
+  companyId            String   @map("company_id")
+  email                String
+  submissionStatus     String   @default("in_progress") @map("submission_status")
+  completionPercentage Int      @default(0) @map("completion_percentage")
+  formData             Json     @map("form_data")
+  calculatedMetrics    Json?    @map("calculated_metrics")
+  createdAt            DateTime @default(now()) @map("created_at")
+  completedAt          DateTime? @map("completed_at")
+
+  // Relations
+  company              Company @relation(fields: [companyId], references: [id])
+  auditReports         AuditReport[]
+  userInteractions     UserInteraction[]
+
+  @@index([submissionStatus])
+  @@index([completedAt])
+  @@index([companyId])
+  @@map("audit_submissions")
+}
+
+model AuditReport {
+  id           String   @id @default(cuid())
+  submissionId String   @map("submission_id")
+  reportType   String   @default("comprehensive") @map("report_type")
+  reportData   Json     @map("report_data")
+  pdfUrl       String?  @map("pdf_url")
+  pdfFileSize  Int?     @map("pdf_file_size") // Size in bytes
+  pdfFilename  String?  @map("pdf_filename")
+  generatedAt  DateTime @default(now()) @map("generated_at")
+  sentAt       DateTime? @map("sent_at")
+  openedAt     DateTime? @map("opened_at")
+  pdfStoredAt  DateTime? @map("pdf_stored_at") // When PDF was stored in database
+
+  // Relations
+  submission   AuditSubmission @relation(fields: [submissionId], references: [id])
+
+  @@index([generatedAt])
+  @@index([openedAt])
+  @@index([pdfStoredAt])
+  @@map("audit_reports")
+}
+
+model UserInteraction {
+  id              String   @id @default(cuid())
+  submissionId    String   @map("submission_id")
+  interactionType String   @map("interaction_type")
+  stepName        String?  @map("step_name")
+  timeSpent       Int?     @map("time_spent") // seconds
+  interactionData Json?    @map("interaction_data")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  // Relations
+  submission      AuditSubmission @relation(fields: [submissionId], references: [id])
+
+  @@index([submissionId, interactionType])
+  @@map("user_interactions")
+}

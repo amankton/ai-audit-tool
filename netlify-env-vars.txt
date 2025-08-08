@@ -1,0 +1,33 @@
+# Environment Variables for Netlify Deployment
+# Copy these to Netlify Dashboard → Site Settings → Environment Variables
+
+# Database (Required)
+DATABASE_URL=postgresql://username:password@host:5432/database_name
+
+# n8n Integration (Required)
+N8N_WEBHOOK_URL=https://n8n.nfluencehub.com/webhook/f9c8b82d-996b-4860-b419-536c8718d6bd
+NEXT_PUBLIC_N8N_WEBHOOK_URL=https://n8n.nfluencehub.com/webhook/f9c8b82d-996b-4860-b419-536c8718d6bd
+
+# Authentication (Required)
+NEXTAUTH_SECRET=your-super-secret-key-minimum-32-characters-long
+NEXTAUTH_URL=https://audit.yourdomain.com
+
+# Optional: Analytics
+GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
+
+# Optional: Email (if using SMTP)
+SMTP_HOST=smtp.yourdomain.com
+SMTP_PORT=587
+SMTP_USER=noreply@yourdomain.com
+SMTP_PASS=your-email-password
+
+# Optional: File Storage Limits
+MAX_FILE_SIZE=10485760
+UPLOAD_DIR=/tmp/uploads/reports
+
+# Instructions:
+# 1. Go to Netlify Dashboard
+# 2. Select your AI Audit site
+# 3. Go to Site Settings → Environment Variables
+# 4. Add each variable above with your actual values
+# 5. Deploy your site
