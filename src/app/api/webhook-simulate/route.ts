@@ -216,14 +216,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({
         success: false,
         error: 'Failed to store PDF in database',
-        details: webhookError.message
+        details: (webhookError as Error).message
       }, { status: 500 });
     }
 
   } catch (error) {
     console.error('Webhook simulation error:', error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: error.message },
+      { success: false, error: 'Internal server error', details: (error as Error).message },
       { status: 500 }
     );
   } finally {

@@ -49,8 +49,8 @@ export async function GET(request: NextRequest) {
         recentSubmissions: recentSubmissions.map(sub => ({
           id: sub.id,
           email: sub.email,
-          companyName: sub.formData?.companyName || 'Unknown',
-          submissionId: sub.formData?.submissionId,
+          companyName: (sub.formData as any)?.companyName || 'Unknown',
+          submissionId: (sub.formData as any)?.submissionId,
           status: sub.submissionStatus,
           createdAt: sub.createdAt,
           completedAt: sub.completedAt,
@@ -69,8 +69,8 @@ export async function GET(request: NextRequest) {
         recentReports: recentReports.map(report => ({
           id: report.id,
           submissionEmail: report.submission.email,
-          companyName: report.submission.formData?.companyName || 'Unknown',
-          submissionId: report.submission.formData?.submissionId,
+          companyName: (report.submission.formData as any)?.companyName || 'Unknown',
+          submissionId: (report.submission.formData as any)?.submissionId,
           hasPdf: !!report.pdfUrl,
           pdfUrl: report.pdfUrl,
           pdfFilename: report.pdfFilename,
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error checking recent activity:', error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: (error as Error).message },
+      { success: false, error: 'Internal server error', details: error.message },
       { status: 500 }
     );
   } finally {

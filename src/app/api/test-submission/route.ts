@@ -52,9 +52,9 @@ export async function POST(request: NextRequest) {
       message: 'Test submission created successfully',
       submission: {
         id: submission.id,
-        submissionId: (submission.formData as any)?.submissionId,
+        submissionId: submission.formData?.submissionId,
         email: submission.email,
-        companyName: (submission.formData as any)?.companyName,
+        companyName: submission.formData?.companyName,
         status: submission.submissionStatus
       }
     });
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating test submission:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to create test submission', details: error.message },
+      { success: false, error: 'Failed to create test submission', details: (error as Error).message },
       { status: 500 }
     );
   } finally {
@@ -86,9 +86,9 @@ export async function GET(request: NextRequest) {
       message: 'Recent submissions retrieved',
       submissions: submissions.map(sub => ({
         id: sub.id,
-        submissionId: (sub.formData as any)?.submissionId,
+        submissionId: sub.formData?.submissionId,
         email: sub.email,
-        companyName: (sub.formData as any)?.companyName,
+        companyName: sub.formData?.companyName,
         status: sub.submissionStatus,
         createdAt: sub.createdAt,
         hasReports: sub.auditReports.length > 0,
@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error retrieving submissions:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to retrieve submissions', details: error.message },
+      { success: false, error: 'Failed to retrieve submissions', details: (error as Error).message },
       { status: 500 }
     );
   } finally {
