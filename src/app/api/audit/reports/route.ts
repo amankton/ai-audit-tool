@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@/generated/prisma';
 import { getAuditReportBySubmissionId, getAuditReportByEmail, formatFileSize } from '@/lib/server-utils';
 
+// Helper function to safely extract string values from Prisma JsonValue
+function getStr(fd: unknown, key: string): string | undefined {
+  if (fd && typeof fd === 'object' && !Array.isArray(fd)) {
+    const v = (fd as Record<string, unknown>)[key];
+    if (typeof v === 'string' && v.trim()) return v;
+  }
+  return undefined;
+}
+
 const prisma = new PrismaClient();
 
 export async function GET(request: NextRequest) {
@@ -45,7 +54,7 @@ export async function GET(request: NextRequest) {
     const formattedReports = reports!.map(report => ({
       id: report.id,
       submissionId: report.submission.id,
-      companyName: (report.submission.formData as any)?.companyName || 'Unknown Company',
+      companyName: getStr(report.submission.formData, 'companyName') ?? 'Unknown Company',
       email: report.submission.email,
       reportType: report.reportType,
       submissionStatus: report.submission.submissionStatus,
@@ -146,7 +155,7 @@ export async function POST(request: NextRequest) {
       report: {
         id: updatedReport.id,
         submissionId: updatedReport.submission.id,
-        companyName: (updatedReport.submission.formData as any)?.companyName || 'Unknown Company',
+        companyName: getStr(updatedReport.submission.formData, 'companyName') ?? 'Unknown Company',
         email: updatedReport.submission.email,
         action: action,
         updatedAt: new Date(),
