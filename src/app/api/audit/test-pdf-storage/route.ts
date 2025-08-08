@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const summary = submissions.map(submission => ({
       id: submission.id,
       email: submission.email,
-      companyName: submission.formData?.companyName || 'Unknown',
+      companyName: (submission.formData as any)?.companyName || 'Unknown',
       status: submission.submissionStatus,
       createdAt: submission.createdAt,
       completedAt: submission.completedAt,
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('Error in PDF storage test:', error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: error.message },
+      { success: false, error: 'Internal server error', details: (error as Error).message },
       { status: 500 }
     );
   }
@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error creating test submission:', error);
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: error.message },
+      { success: false, error: 'Internal server error', details: (error as Error).message },
       { status: 500 }
     );
   }
