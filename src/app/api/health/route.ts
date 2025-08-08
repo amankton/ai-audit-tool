@@ -22,10 +22,10 @@ export async function GET(request: NextRequest) {
       error: null
     };
   } catch (error) {
-    checks.database = {
+    (checks.database as any) = {
       status: 'unhealthy',
       responseTime: Date.now() - startTime,
-      error: (error as Error).message
+      error: error instanceof Error ? error.message : String(error)
     };
   }
 
@@ -45,10 +45,8 @@ export async function GET(request: NextRequest) {
     fs.unlinkSync(testFile);
     
     checks.filesystem = { status: 'healthy', error: null };
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    (checks.filesystem as any).error = msg;
-    checks.filesystem.status = 'unhealthy';
+  } catch (error) {
+    checks.filesystem = { status: 'unhealthy', error: error instanceof Error ? error.message : String(error) };
   }
 
   // Check environment variables
@@ -74,20 +72,18 @@ export async function GET(request: NextRequest) {
           method: 'HEAD',
           signal: AbortSignal.timeout(5000) // 5 second timeout
         });
-        checks.n8n.status = response.ok ? 'healthy' : 'unhealthy';
-        (checks.n8n as any).error = response.ok ? null : `HTTP ${response.status}`;
+        checks.n8n = {
+          status: response.ok ? 'healthy' : 'unhealthy',
+          error: response.ok ? null : `HTTP ${response.status}`
+        };
       } else {
-        checks.n8n.status = 'unhealthy';
-        (checks.n8n as any).error = 'N8N_WEBHOOK_URL not configured';
+        (checks.n8n as any) = { status: 'unhealthy', error: 'N8N_WEBHOOK_URL not configured' };
       }
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      checks.n8n.status = 'unhealthy';
-      (checks.n8n as any).error = msg;
+    } catch (error) {
+      (checks.n8n as any) = { status: 'unhealthy', error: error instanceof Error ? error.message : String(error) };
     }
   } else {
-    checks.n8n.status = 'skipped';
-    (checks.n8n as any).error = 'Use ?check-n8n=true to test';
+    (checks.n8n as any) = { status: 'skipped', error: 'Use ?check-n8n=true to test' };
   }
 
   // Overall health status
