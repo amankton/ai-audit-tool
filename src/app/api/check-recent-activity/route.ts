@@ -99,10 +99,11 @@ export async function GET(request: NextRequest) {
       }
     });
 
-  } catch (error) {
-    console.error('Error checking recent activity:', error);
+  } catch (err) {
+    console.error('Error checking recent activity:', err);
+    const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { success: false, error: 'Internal server error', details: error.message },
+      { success: false, error: 'Internal server error', details: msg },
       { status: 500 }
     );
   } finally {
