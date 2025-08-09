@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@/generated/prisma';
 import { z } from 'zod';
-import fs from 'fs';
-import path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -78,34 +76,25 @@ export async function POST(request: NextRequest) {
 
     console.log('Found submission:', submission.id);
 
-    // Save PDF data to file system (inline implementation)
+    // Prepare PDF data for database storage
+    let pdfBuffer: Buffer;
     let pdfUrl: string;
     try {
       // Extract base64 data from data URL
       const base64Data = validatedData.pdfData.replace(/^data:application\/pdf;base64,/, '');
-      const buffer = Buffer.from(base64Data, 'base64');
+      pdfBuffer = Buffer.from(base64Data, 'base64');
 
-      // Create uploads directory if it doesn't exist
-      const uploadsDir = path.join(process.cwd(), 'public', 'uploads', 'reports');
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
-      }
-
-      // Generate unique filename
+      // Generate a URL for serving the PDF (will be served from database)
       const timestamp = Date.now();
       const sanitizedFilename = validatedData.filename.replace(/[^a-zA-Z0-9.-]/g, '_');
       const filename = `${timestamp}-${sanitizedFilename}`;
-      const filePath = path.join(uploadsDir, filename);
+      pdfUrl = `/api/pdf/serve/${filename}`;
 
-      // Write PDF file
-      fs.writeFileSync(filePath, buffer);
-      pdfUrl = `/uploads/reports/${filename}`;
-
-      console.log('PDF saved successfully:', pdfUrl);
+      console.log('PDF data prepared for database storage, size:', pdfBuffer.length, 'bytes');
     } catch (pdfError) {
-      console.error('Error saving PDF data:', pdfError);
+      console.error('Error preparing PDF data:', pdfError);
       return NextResponse.json(
-        { success: false, error: 'Failed to save PDF file' },
+        { success: false, error: 'Failed to process PDF data' },
         { status: 500 }
       );
     }
@@ -119,6 +108,10 @@ export async function POST(request: NextRequest) {
         where: { id: auditReport.id },
         data: {
           pdfUrl: pdfUrl,
+          pdfData: pdfBuffer,
+          pdfFileSize: validatedData.fileSize,
+          pdfFilename: validatedData.filename,
+          pdfStoredAt: new Date(),
           reportData: {
             ...auditReport.reportData as any,
             pdfMetadata: {
@@ -147,6 +140,10 @@ export async function POST(request: NextRequest) {
             }
           },
           pdfUrl: pdfUrl,
+          pdfData: pdfBuffer,
+          pdfFileSize: validatedData.fileSize,
+          pdfFilename: validatedData.filename,
+          pdfStoredAt: new Date(),
           generatedAt: new Date(),
         }
       });

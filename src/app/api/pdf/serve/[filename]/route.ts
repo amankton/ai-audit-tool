@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
+import { PrismaClient } from '@/generated/prisma';
+
+const prisma = new PrismaClient();
 
 export async function GET(
   request: NextRequest,
@@ -8,7 +9,7 @@ export async function GET(
 ) {
   try {
     const { filename } = await params;
-    
+
     if (!filename) {
       return NextResponse.json(
         { success: false, error: 'Filename is required' },
@@ -16,40 +17,42 @@ export async function GET(
       );
     }
 
-    // Construct the file path
-    const filePath = path.join(process.cwd(), 'public', 'uploads', 'reports', filename);
-    
-    console.log('Attempting to serve PDF:', {
-      filename,
-      filePath,
-      exists: fs.existsSync(filePath)
+    console.log('Attempting to serve PDF from database:', filename);
+
+    // Find the audit report with this filename
+    const auditReport = await prisma.auditReport.findFirst({
+      where: {
+        pdfFilename: {
+          contains: filename.replace(/^\d+-/, '') // Remove timestamp prefix
+        }
+      },
+      select: {
+        pdfData: true,
+        pdfFilename: true,
+        pdfFileSize: true
+      }
     });
 
-    // Check if file exists
-    if (!fs.existsSync(filePath)) {
-      console.error('PDF file not found:', filePath);
+    if (!auditReport || !auditReport.pdfData) {
+      console.error('PDF not found in database:', filename);
       return NextResponse.json(
         { success: false, error: 'PDF file not found' },
         { status: 404 }
       );
     }
 
-    // Read the file
-    const fileBuffer = fs.readFileSync(filePath);
-    const stats = fs.statSync(filePath);
-
-    console.log('Serving PDF:', {
-      filename,
-      size: stats.size,
-      bufferLength: fileBuffer.length
+    console.log('Serving PDF from database:', {
+      filename: auditReport.pdfFilename,
+      size: auditReport.pdfFileSize,
+      bufferLength: auditReport.pdfData.length
     });
 
-    // Return the PDF file
-    return new NextResponse(fileBuffer, {
+    // Return the PDF file from database
+    return new NextResponse(auditReport.pdfData, {
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Length': fileBuffer.length.toString(),
-        'Content-Disposition': `inline; filename="${filename}"`,
+        'Content-Length': auditReport.pdfData.length.toString(),
+        'Content-Disposition': `inline; filename="${auditReport.pdfFilename || filename}"`,
         'Cache-Control': 'public, max-age=31536000',
       },
     });
